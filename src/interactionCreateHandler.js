@@ -1,96 +1,49 @@
 const { helpCommand } = require('./helpCommand');
 
 async function onInteractionCreate(interaction, conversationManager, commandHandler, errorHandler) {
-	if (!interaction.isCommand()) return;
+  if (interaction.type !== 2) return; // Check if it's an APPLICATION_COMMAND
 
-	if (interaction.commandName === 'help') {
-		try {
-			await helpCommand(interaction);
-		} catch (error) {
-			await errorHandler.handleError(error, interaction);
-		}
-		return;
-	}
+  const { name, options } = interaction.data;
 
-	if (interaction.commandName === 'clear') {
-		try {
-			await interaction.deferReply({ ephemeral: true });
-			await commandHandler.clearCommand(interaction, conversationManager);
-		} catch (error) {
-			await errorHandler.handleError(error, interaction);
-		}
-		return;
-	}
-
-	if (interaction.commandName === 'save') {
-		try {
-			await interaction.deferReply({ ephemeral: true });
-			await commandHandler.saveCommand(interaction, conversationManager);
-		} catch (error) {
-			await errorHandler.handleError(error, interaction);
-		}
-		return;
-	}
-
-	if (interaction.commandName === 'model') {
-		try {
-			await interaction.deferReply({ ephemeral: true });
-			await commandHandler.modelCommand(interaction, conversationManager);
-		} catch (error) {
-			await errorHandler.handleError(error, interaction);
-		}
-		return;
-	}
-
-	if (interaction.commandName === 'prompt') {
-		try {
-			await interaction.deferReply({ ephemeral: true });
-			await commandHandler.promptCommand(interaction, conversationManager);
-		} catch (error) {
-			await errorHandler.handleError(error, interaction);
-		}
-		return;
-	}
-
-	if (interaction.commandName === 'reset') {
-		try {
-			await interaction.deferReply({ ephemeral: true });
-			await commandHandler.resetCommand(interaction, conversationManager);
-		} catch (error) {
-			await errorHandler.handleError(error, interaction);
-		}
-		return;
-	}
-
-	if (interaction.commandName === 'testerror') {
-		try {
-			await interaction.deferReply({ ephemeral: true });
-			// Check if the user executing the command is the bot owner
-			if (interaction.user.id !== process.env.DISCORD_USER_ID) {
-				await interaction.editReply('Only the bot owner can use this command.');
-				return;
-			}
-			// Trigger a test error
-			throw new Error('This is a test error triggered by the /testerror command.');
-		} catch (error) {
-			await errorHandler.handleError(error, interaction);
-		}
-		return;
-	}
-
-	if (interaction.commandName === 'settings') {
-		try {
-			await interaction.deferReply({ ephemeral: true });
-			await commandHandler.settingsCommand(interaction, conversationManager);
-		} catch (error) {
-			await interaction.editReply({
-				content: 'An error occurred while processing the command.',
-				ephemeral: true,
-			});
-			await errorHandler.handleError(error, interaction);
-		}
-		return;
-	}
+  try {
+    let response;
+    switch (name) {
+      case 'help':
+        response = helpCommand();
+        break;
+      case 'clear':
+        response = await commandHandler.clearCommand(interaction, conversationManager);
+        break;
+      case 'save':
+        response = await commandHandler.saveCommand(interaction, conversationManager);
+        break;
+      case 'model':
+        response = await commandHandler.modelCommand(interaction, conversationManager);
+        break;
+      case 'prompt':
+        response = await commandHandler.promptCommand(interaction, conversationManager);
+        break;
+      case 'reset':
+        response = await commandHandler.resetCommand(interaction, conversationManager);
+        break;
+      case 'settings':
+        response = await commandHandler.settingsCommand(interaction, conversationManager);
+        break;
+      default:
+        response = {
+          type: 4,
+          data: { content: 'Unknown command.', flags: 64 }
+        };
+    }
+    return response;
+  } catch (error) {
+    console.error('Error in command execution:', error);
+    await errorHandler.handleError(error, interaction);
+    return {
+      type: 4,
+      data: { content: 'An error occurred while processing the command.', flags: 64 }
+    };
+  }
 }
 
 module.exports = { onInteractionCreate };

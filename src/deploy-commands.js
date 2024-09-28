@@ -19,7 +19,6 @@ const commands = [
 					{ name: 'Claude 3 Opus', value: 'claude-3-opus-20240229' },
 					{ name: 'Claude 3 Sonnet', value: 'claude-3-sonnet-20240229' },
 					{ name: 'Claude 3 Haiku', value: 'claude-3-haiku-20240307' },
-					{ name: 'Google Gemini 1.5 Pro', value: process.env.GOOGLE_MODEL_NAME },
 				),
 		)
 		.setDMPermission(false),
